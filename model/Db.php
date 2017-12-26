@@ -16,7 +16,7 @@ class Db
 		'user'=>'root',
 		'pass'=>'root',
 		'charset'=>'utf-8',
-		'dbName'=>'edu'
+		'dbName'=>'edu' //数据库是edu
 	];
 	
 	//新增主键id
@@ -39,6 +39,7 @@ class Db
 	{
 		//初始化参数
 		$this->dbConfig = array_merge($this->dbConfig, $params);
+		
 		
 		//连接数据库
 		$this->connect();
@@ -72,17 +73,22 @@ class Db
 	private function connect()
 	{
 		try{
-			//配置数据源DSN
-			$dsn = "{$this->dbConfig['host']},{$this->dbConfig['port']},{$this->dbConfig['user']},{$this->dbConfig['pass']},{$this->dbConfig['charset']}, {$this->dbConfig['dbName']}}";
+
+			//配置数据源DSN mysql:host=localhost;dbname=test
+			//$dsn = {$this->dbConfig['host']},{$this->dbConfig['port']},{$this->dbConfig['user']},{$this->dbConfig['pass']},{$this->dbConfig['charset']}, {$this->dbConfig['dbName']}}";
+			$dsn = 'mysql:host='.$this->dbConfig['host'].';dbname='.$this->dbConfig['dbName']; //string(31) "mysql:host=localhost;dbname=edu"
 			
 			//创建PDO对象
+			//默认这个不是长连接，如果需要数据库长连接，需要最后加一个参数：array(PDO::ATTR_PERSISTENT => true) 变成这样：$db = new PDO($dsn, $user, $pass, array(PDO::ATTR_PERSISTENT => true));
 			$this->conn = new PDO($dsn, $this->dbConfig['user'], $this->dbConfig['pass']);
 			
 			//设置客户端的默认字符集
-			$this->conn->query("SET NAMES {$this->dbConfig['charset']}");
+			$test = $this->conn->query("SET NAMES {$this->dbConfig['charset']}");
 			
 		}catch(PDOException $e){
+			
 			die('数据库连接失败:'.$e->getMessage());
+			
 		}
 	}
 	
@@ -90,21 +96,28 @@ class Db
 	/**
 	*	PDO读和写是分开的，是不一样的。
 	*	@完成数据表的写操作: 新增，更新，删除
-	*	返回受影响的记录，如果新增还返回新增主键id
+	*	@返回受影响的记录，如果新增还返回新增主键id
 	**/
 	public function exec($sql)
 	{
 		$num = $this->conn->exec($sql);
 		
 		if($num > 0){
+			
 			//如果是新增操作，初始化新增主键id属性
-			if(null !==$this->conn->lasInsertId()){
+			if(null != $this->conn->lastInsertId()){
+				
 				$this->insertId = $this->conn->lastInsertId();
+
 			}
+			
 			$this->num = $num; //返回受影响的记录数量
+			
 		}else{
-			$error = $this->conn->errorInfo();//获取最后操作的错误信息的数组。
+			
+			$error = $this->conn->errorInfo();//获取最后操作的错误信息的数组。,已经修改过的数值，再改为0是会有提示出错的。
 			print '操作失败'.$error[0].':'.$error[1].':'.$error[2];
+			
 		}
 	}
 	
@@ -113,7 +126,7 @@ class Db
 	**/	
 	public function fetch($sql)
 	{
-		$this->conn->query($sql)->fetch(PDO::FETCH_ASSOC);
+		$this->conn->query($sql)->fetch(PDO::FETCH_ASSOC);//$this->conn->query($sql)->fetch(PDO::FETCH_ASSOC);  PDO::FETCH_ASSOC 作用是什么？
 	}
 	
 	/**

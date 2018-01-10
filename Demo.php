@@ -45,7 +45,31 @@ echo '成功删除了：'.$db->num.' 条记录, 删除的主键id是' . $db->ins
 * 四、查询单条
 **/
 
-$sql = "SELECT * From student where grade > 56";
+    echo '<table border="1" align="center" width=90%>';
+    echo '<caption><h1>联系人信息表</h1></caption>';
+    echo '<tr bgcolor="#cccccc">';
+    echo '<th>UID</th><th>姓名</th><th>联系地址</th><th>联系电话</th><th>电子邮件</th></tr>';
+ 
+    //使用query方式执行SELECT语句，建议使用prepare()和execute()形式执行语句
+    $stmt = $db->query("select * FROM student");
+	var_dump($stmt);die;
+    //以PDO::FETCH_NUM形式获取索引并遍历
+    while (list($id,$name,$email,$course,$grade)=$stmt->fetch(PDO::FETCH_NUM)){
+        echo '<tr>';
+        echo '<td>'.$id.'</td>';
+        echo '<td>'.$name.'</td>';
+        echo '<td>'.$email.'</td>';
+        echo '<td>'.$course.'</td>';
+        echo '<td>'.$grade.'</td>';
+        echo '</tr>';
+    }
+ 
+    echo '</table>';
+
+
+die;
+
+$sql = "SELECT * FROM student WHERE grade > 0";
 $row = $db->fetch($sql);
 var_dump($row);
 die;
@@ -55,4 +79,5 @@ die;
 **/
 $sql = "SELECT * FROM student";
 $rows = $db->fetchAll($sql);
+echo '<pre>';
 var_dump($rows);
